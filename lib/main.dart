@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_jobsheet_3/dropdown.dart';
+import 'package:flutter_jobsheet_3/widgets/input.dart';
+import 'package:flutter_jobsheet_3/widgets/konversi.dart';
+import 'package:flutter_jobsheet_3/widgets/result.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -14,92 +17,71 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   double _inputUser = 0;
-  double _kelvin = 0;
-  double _reamur = 0;
+  double _result = 0;
 
-  final temperaturController = TextEditingController();
+  String _selectedDropdown = "Silahkan Pilih Suhu";
+  final _listSatuanSuhu = ["Silahkan Pilih Suhu", "Kelvin", "Reamur"];
+  List<String> _listHasil = [];
+  TextEditingController etInput = TextEditingController();
 
-  @override
-  void dispose() {
-    temperaturController.dispose();
-    super.dispose();
+  _onChangedDropdown(String value) {
+    setState(() {
+      _selectedDropdown = value;
+    });
+    _convertHandler();
   }
 
-  // This widget is the root of your application.
+  _convertHandler() {
+    setState(() {
+      if (etInput.text.isNotEmpty) {
+        _inputUser = double.parse(etInput.text);
+        switch (_selectedDropdown) {
+          case "Kelvin":
+            _result = _inputUser + 273;
+            _listHasil.add("Konversi dari:  $_inputUser ke  $_result Kelvin");
+            break;
+          case "Reamur":
+            _result = _inputUser * 4 / 5;
+            _listHasil.add("Konversi dari:  $_inputUser ke  $_result Reamur");
+            break;
+          default:
+            _listHasil.add("Suhu belum dipilih");
+            break;
+        }
+      } else {
+        _listHasil.add("Suhu belum dipilih dan Celcius kosong");
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Koversi Suhu',
+      title: 'Konversi Suhu - 2031710060_Mustika Putri',
       theme: ThemeData(
         primarySwatch: Colors.brown,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text("Konverter Suhu - Mustika Putri Winarni_2031710060"),
+          title: const Text("Konverter Suhu"),
         ),
         body: Container(
-            margin: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextFormField(
-                  controller: temperaturController,
-                  decoration: const InputDecoration(
-                      labelText: 'Masukkan Suhu dalam Celcius'),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        const Text("Suhu dalam Kelvin"),
-                        Text(
-                          _kelvin.toStringAsFixed(2),
-                          style: const TextStyle(fontSize: 32),
-                        )
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        const Text("Suhu dalam Reamur"),
-                        Text(
-                          _reamur.toStringAsFixed(2),
-                          style: const TextStyle(fontSize: 32),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-                MaterialButton(
-                  onPressed: () {
-                    convert();
-                  },
-                  child: const Text(
-                    "Konversi",
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  color: Colors.brown,
-                  textColor: Colors.white,
-                  minWidth: double.maxFinite,
-                  height: 55,
-                )
-              ],
-            )),
+          margin: const EdgeInsets.all(8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Input(etInput: etInput),
+              Dropdown(
+                  selectedDropdown: _selectedDropdown,
+                  listSatuanSuhu: _listSatuanSuhu,
+                  onChangedDropdown: _onChangedDropdown),
+              Konversi(convertHandler: _convertHandler),
+              Result(listHasil: _listHasil)
+            ],
+          ),
+        ),
       ),
     );
-  }
-
-  void convert() {
-    _inputUser = double.parse(temperaturController.text);
-    setState(() {
-      _kelvin = _inputUser + 273.15;
-      _reamur = _inputUser * 0.8;
-    });
   }
 }
